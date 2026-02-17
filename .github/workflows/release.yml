@@ -1,0 +1,42 @@
+# Build and publish agent + server when you push a version tag (e.g. v0.1.0).
+# After the workflow runs, users can install the agent with:
+#   curl -sSL https://raw.githubusercontent.com/YOUR_ORG/REPO/main/scripts/install-agent.sh | sudo bash -s -- --server-url wss://YOUR_SERVER/agent
+
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.21'
+
+      - name: Build agent (linux/amd64)
+        run: GOOS=linux GOARCH=amd64 go build -o cassandra-control-agent-linux-amd64 ./cmd/agent
+      - name: Build agent (linux/arm64)
+        run: GOOS=linux GOARCH=arm64 go build -o cassandra-control-agent-linux-arm64 ./cmd/agent
+      - name: Build server (linux/amd64)
+        run: GOOS=linux GOARCH=amd64 go build -o cassandra-control-server-linux-amd64 ./cmd/server
+      - name: Build server (linux/arm64)
+        run: GOOS=linux GOARCH=arm64 go build -o cassandra-control-server-linux-arm64 ./cmd/server
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            cassandra-control-agent-linux-amd64
+            cassandra-control-agent-linux-arm64
+            cassandra-control-server-linux-amd64
+            cassandra-control-server-linux-arm64
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

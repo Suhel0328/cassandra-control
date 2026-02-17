@@ -1,0 +1,22 @@
+[Unit]
+Description=Cassandra Control Server
+After=network.target
+
+[Service]
+Type=simple
+# Install server binary, server.crt, server.key, and web/dashboard under this directory
+WorkingDirectory=/opt/cassandra-control
+ExecStart=/opt/cassandra-control/server
+# Optional: use custom paths (uncomment and set)
+# Environment="CASSANDRA_CONTROL_CERT_FILE=/opt/cassandra-control/server.crt"
+# Environment="CASSANDRA_CONTROL_KEY_FILE=/opt/cassandra-control/server.key"
+# Environment="CASSANDRA_CONTROL_DASHBOARD_DIR=/opt/cassandra-control/web/dashboard"
+Restart=on-failure
+RestartSec=5
+
+# Binding to 443 usually requires root or capabilities
+# CapabilityBoundingSet=CAP_NET_BIND_SERVICE
+# AmbientCapabilities=CAP_NET_BIND_SERVICE
+
+[Install]
+WantedBy=multi-user.target

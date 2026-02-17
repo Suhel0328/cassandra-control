@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cassandra Control – Dashboard</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="layout">
+    <header class="header">
+      <h1>Cassandra Control</h1>
+      <p class="subtitle">Central operations for Apache Cassandra (AxonOps-style)</p>
+      <div class="refresh-row">
+        <button type="button" id="refreshNodes" class="btn btn-primary">Refresh nodes</button>
+        <span id="nodeCount" class="badge">0 nodes</span>
+      </div>
+    </header>
+
+    <main class="main">
+      <section class="card nodes-section">
+        <h2>Connected nodes</h2>
+        <div id="nodesList" class="nodes-list">
+          <p class="muted">Loading…</p>
+        </div>
+      </section>
+
+      <section class="card command-section">
+        <h2>Run command</h2>
+        <form id="commandForm" class="command-form">
+          <div class="form-row">
+            <label for="target">Target</label>
+            <select id="target" name="target">
+              <option value="">Select a node or "all"</option>
+              <option value="all">All nodes</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <label for="action">Action</label>
+            <select id="action" name="action" required>
+              <option value="">Select action</option>
+              <option value="status">status</option>
+              <option value="start">start</option>
+              <option value="stop">stop</option>
+              <option value="restart">restart</option>
+              <option value="metrics">metrics</option>
+              <option value="logs">logs</option>
+              <option value="commitlogs">commitlogs</option>
+              <option value="backup">backup</option>
+              <option value="restore">restore</option>
+              <option value="archive_commitlog">archive_commitlog</option>
+            </select>
+          </div>
+          <div class="form-row params-row" id="paramsRow" style="display: none;">
+            <label for="params">Params</label>
+            <input type="text" id="params" name="params" placeholder="e.g. keyspace,table,/path or commitlog name / all">
+          </div>
+          <div class="form-row">
+            <button type="submit" id="runCmd" class="btn btn-primary">Run</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="card results-section">
+        <h2>Command results</h2>
+        <pre id="results" class="results-box">Run a command to see results.</pre>
+      </section>
+    </main>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>

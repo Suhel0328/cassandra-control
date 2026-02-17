@@ -1,0 +1,8 @@
+# Cassandra Control Agent configuration
+# Copy to /etc/cassandra-control/agent.yml and update server_url.
+# Then: sudo chmod 0640 /etc/cassandra-control/agent.yml
+
+server_url: "wss://YOUR_CONTROL_SERVER/agent"
+# Optional (for future use):
+# org: "your-org"
+# key: "your-key"

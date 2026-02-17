@@ -1,0 +1,15 @@
+[Unit]
+Description=Cassandra Control Agent
+After=network.target
+
+[Service]
+Type=simple
+User=cassandra-control
+Group=cassandra-control
+ExecStart=/usr/share/cassandra-control/cassandra-control-agent
+Environment="CASSANDRA_CONTROL_AGENT_CONFIG=/etc/cassandra-control/agent.yml"
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
