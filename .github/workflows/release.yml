@@ -40,5 +40,6 @@ jobs:
             cassandra-control-server-linux-amd64
             cassandra-control-server-linux-arm64
           generate_release_notes: false
+          body: "Cassandra Control agent and server binaries. See [SETUP.md](https://github.com/${{ github.repository }}/blob/main/SETUP.md) for install."
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
