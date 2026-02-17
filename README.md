@@ -1,4 +1,4 @@
-# Cassandra Control (AxonOps-style)
+# Cassandra Control
 
 Central control server and agents for Apache Cassandra: run start/stop/restart, status, metrics, backup, restore, logs, and commitlog operations from one place. No inbound ports on Cassandra nodes; agents connect outbound over HTTPS (443).
 
