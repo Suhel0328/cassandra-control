@@ -12,6 +12,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write   # required for creating releases and uploading assets
     steps:
       - uses: actions/checkout@v4
 
@@ -37,6 +39,6 @@ jobs:
             cassandra-control-agent-linux-arm64
             cassandra-control-server-linux-amd64
             cassandra-control-server-linux-arm64
-          generate_release_notes: true
+          generate_release_notes: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
