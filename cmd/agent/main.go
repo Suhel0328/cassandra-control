@@ -100,13 +100,13 @@ func handleCommand(conn *websocket.Conn, cmd types.Command) {
 
 	switch cmd.Action {
 	case "start":
-		output = runCommand("systemctl", "start", "cassandra")
+		output = runCommand("sudo", "systemctl", "start", "cassandra")
 	case "stop":
-		output = runCommand("systemctl", "stop", "cassandra")
+		output = runCommand("sudo", "systemctl", "stop", "cassandra")
 	case "restart":
-		output = runCommand("systemctl", "restart", "cassandra")
+		output = runCommand("sudo", "systemctl", "restart", "cassandra")
 	case "status":
-		output = runCommand("systemctl", "is-active", "cassandra")
+		output = runCommand("sudo", "systemctl", "is-active", "cassandra")
 	case "metrics":
 		data, err := os.ReadFile(otelMetricsJSON)
 		if err != nil {

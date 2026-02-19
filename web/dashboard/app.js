@@ -28,7 +28,7 @@ async function fetchNodes() {
 function renderNodes(nodes) {
   nodeCountEl.textContent = nodes.length + ' node(s)';
 
-  const options = targetSelect.querySelectorAll('option[value!=""]');
+  const options = targetSelect.querySelectorAll('option:not([value=""])');
   options.forEach(o => o.remove());
   const allOpt = document.createElement('option');
   allOpt.value = 'all';
