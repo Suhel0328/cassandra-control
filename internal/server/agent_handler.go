@@ -66,6 +66,25 @@ func AgentHandler(reg *Registry) http.HandlerFunc {
 		if node == nil {
 			return
 		}
+
+		// Keepalive: send ping periodically so connection is not dropped by proxies/firewalls
+		done := make(chan struct{})
+		go func() {
+			ticker := time.NewTicker(pingPeriod)
+			defer ticker.Stop()
+			for {
+				select {
+				case <-done:
+					return
+				case <-ticker.C:
+					conn.SetWriteDeadline(time.Now().Add(writeWait))
+					if err := conn.WriteMessage(websocket.PingMessage, nil); err != nil {
+						return
+					}
+				}
+			}
+		}()
+
 		// Read loop: forward agent responses to channel so executor can receive them
 		for {
 			_, msg, err := conn.ReadMessage()
@@ -79,6 +98,7 @@ func AgentHandler(reg *Registry) http.HandlerFunc {
 				// channel full or executor no longer waiting
 			}
 		}
+		close(done)
 		reg.Remove(ip)
 	}
 }

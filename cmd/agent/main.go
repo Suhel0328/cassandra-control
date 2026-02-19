@@ -110,8 +110,15 @@ func handleCommand(conn *websocket.Conn, cmd types.Command) {
 	case "metrics":
 		data, err := os.ReadFile(otelMetricsJSON)
 		if err != nil {
-			output = ""
-			errMsg = fmt.Sprintf("error reading OTEL metrics: %v", err)
+			// Fallback: read via sudo when file is root-owned (e.g. OTEL collector)
+			dataStr := runCommand("sudo", "cat", otelMetricsJSON)
+			dataStr = strings.TrimSpace(dataStr)
+			if strings.HasPrefix(dataStr, "error:") || strings.Contains(dataStr, "Permission denied") || strings.Contains(dataStr, "a password is required") {
+				output = ""
+				errMsg = fmt.Sprintf("error reading OTEL metrics: %v. Add sudoers: echo 'cassandra-control ALL=(ALL) NOPASSWD: /bin/cat %s' | sudo tee /etc/sudoers.d/cassandra-control-metrics", err, otelMetricsJSON)
+			} else {
+				output = dataStr
+			}
 		} else {
 			output = string(data)
 		}

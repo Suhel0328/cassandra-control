@@ -120,3 +120,6 @@ In the control server dashboard, click **Refresh nodes** to see this node.
 - **Download failed:** Ensure the repo has a release with assets named `cassandra-control-agent-linux-amd64` and `cassandra-control-agent-linux-arm64`. Create a release by pushing a tag (e.g. `v0.1.0`); see README.
 - **Node not in dashboard:** Check `sudo systemctl status cassandra-control-agent` and `journalctl -u cassandra-control-agent -f`. Ensure `server_url` in `/etc/cassandra-control/agent.yml` is correct and the server is reachable on port 443.
 - **Permission denied (nodetool/logs):** Ensure Step 3 (usermod) was run so `cassandra-control` is in the Cassandra group.
+- **OTEL metrics permission denied:** If `/tmp/otel_cassandra_metrics.json` is root-owned, allow the agent to read it:  
+  `echo 'cassandra-control ALL=(ALL) NOPASSWD: /bin/cat /tmp/otel_cassandra_metrics.json' | sudo tee /etc/sudoers.d/cassandra-control-metrics` then `sudo chmod 0440 /etc/sudoers.d/cassandra-control-metrics`.  
+  The agent will automatically use `sudo cat` when direct read fails.

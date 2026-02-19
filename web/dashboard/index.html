@@ -7,64 +7,103 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div class="layout">
-    <header class="header">
-      <h1>Cassandra Control</h1>
-      <p class="subtitle">Central operations for Apache Cassandra (AxonOps-style)</p>
-      <div class="refresh-row">
-        <button type="button" id="refreshNodes" class="btn btn-primary">Refresh nodes</button>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <h1 class="logo">Cassandra Control</h1>
+        <p class="logo-sub">Central operations (AxonOps-style)</p>
+      </div>
+      <nav class="sidebar-nav">
+        <a href="#" class="nav-item active" data-view="overview">Overview</a>
+        <a href="#" class="nav-item" data-view="nodes">Nodes</a>
+        <a href="#" class="nav-item" data-view="operations">Operations</a>
+        <a href="#" class="nav-item" data-view="logs">Logs &amp; Events</a>
+      </nav>
+      <div class="sidebar-footer">
         <span id="nodeCount" class="badge">0 nodes</span>
       </div>
-    </header>
+    </aside>
 
     <main class="main">
-      <section class="card nodes-section">
-        <h2>Connected nodes</h2>
-        <div id="nodesList" class="nodes-list">
-          <p class="muted">Loading…</p>
+      <header class="topbar">
+        <div class="breadcrumb">
+          <span id="breadcrumbText">Cluster Overview</span>
         </div>
-      </section>
+        <button type="button" id="refreshNodes" class="btn btn-primary btn-sm">Refresh nodes</button>
+      </header>
 
-      <section class="card command-section">
-        <h2>Run command</h2>
-        <form id="commandForm" class="command-form">
-          <div class="form-row">
-            <label for="target">Target</label>
-            <select id="target" name="target">
-              <option value="">Select a node or "all"</option>
-              <option value="all">All nodes</option>
-            </select>
+      <div id="view-overview" class="view active">
+        <section class="card">
+          <h2>Cluster summary</h2>
+          <div id="clusterSummary" class="cluster-summary">
+            <p class="muted">Loading…</p>
           </div>
-          <div class="form-row">
-            <label for="action">Action</label>
-            <select id="action" name="action" required>
-              <option value="">Select action</option>
-              <option value="status">status</option>
-              <option value="start">start</option>
-              <option value="stop">stop</option>
-              <option value="restart">restart</option>
-              <option value="metrics">metrics</option>
-              <option value="logs">logs</option>
-              <option value="commitlogs">commitlogs</option>
-              <option value="backup">backup</option>
-              <option value="restore">restore</option>
-              <option value="archive_commitlog">archive_commitlog</option>
-            </select>
-          </div>
-          <div class="form-row params-row" id="paramsRow" style="display: none;">
-            <label for="params">Params</label>
-            <input type="text" id="params" name="params" placeholder="e.g. keyspace,table,/path or commitlog name / all">
-          </div>
-          <div class="form-row">
-            <button type="submit" id="runCmd" class="btn btn-primary">Run</button>
-          </div>
-        </form>
-      </section>
+        </section>
+        <section class="card">
+          <h2>Connected nodes</h2>
+          <div id="nodesListOverview" class="nodes-grid"></div>
+        </section>
+      </div>
 
-      <section class="card results-section">
-        <h2>Command results</h2>
-        <pre id="results" class="results-box">Run a command to see results.</pre>
-      </section>
+      <div id="view-nodes" class="view">
+        <section class="card">
+          <h2>Connected nodes</h2>
+          <div id="nodesList" class="nodes-list"></div>
+        </section>
+      </div>
+
+      <div id="view-operations" class="view">
+        <section class="card">
+          <h2>Run command</h2>
+          <form id="commandForm" class="command-form">
+            <div class="form-row">
+              <label for="target">Target</label>
+              <select id="target" name="target">
+                <option value="">Select a node or "all"</option>
+                <option value="all">All nodes</option>
+              </select>
+            </div>
+            <div class="form-row">
+              <label for="action">Action</label>
+              <select id="action" name="action" required>
+                <option value="">Select action</option>
+                <option value="status">status</option>
+                <option value="start">start</option>
+                <option value="stop">stop</option>
+                <option value="restart">restart</option>
+                <option value="metrics">metrics</option>
+                <option value="logs">logs</option>
+                <option value="commitlogs">commitlogs</option>
+                <option value="backup">backup</option>
+                <option value="restore">restore</option>
+                <option value="archive_commitlog">archive_commitlog</option>
+              </select>
+            </div>
+            <div class="form-row params-row" id="paramsRow" style="display: none;">
+              <label for="params">Params</label>
+              <input type="text" id="params" name="params" placeholder="e.g. keyspace,table,/path or commitlog name / all">
+            </div>
+            <div class="form-row">
+              <button type="submit" id="runCmd" class="btn btn-primary">Run</button>
+            </div>
+          </form>
+        </section>
+        <section class="card">
+          <h2>Command results</h2>
+          <div id="resultsContainer">
+            <pre id="results" class="results-box">Run a command to see results.</pre>
+            <div id="metricsCards" class="metrics-cards" style="display: none;"></div>
+          </div>
+        </section>
+      </div>
+
+      <div id="view-logs" class="view">
+        <section class="card">
+          <h2>Logs &amp; Events</h2>
+          <p class="muted">Select a node and run the "logs" action from Operations to view system.log output here, or run "metrics" for OTEL metrics.</p>
+          <pre id="logsOutput" class="results-box">No logs loaded.</pre>
+        </section>
+      </div>
     </main>
   </div>
   <script src="app.js"></script>
