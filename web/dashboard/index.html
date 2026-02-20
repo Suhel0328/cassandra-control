@@ -83,6 +83,25 @@
             <div class="chart-wrap"><canvas id="chartWriteLatencyMax"></canvas></div>
           </div>
         </section>
+        <section class="card">
+          <h2 class="section-title section-divider">Storage &amp; Compaction</h2>
+          <div class="charts-grid charts-storage">
+            <div class="chart-wrap"><canvas id="chartCompactionStorage"></canvas></div>
+            <div class="chart-wrap"><canvas id="chartTotalHints"></canvas></div>
+            <div class="chart-wrap"><canvas id="chartHintsInProgressStorage"></canvas></div>
+          </div>
+        </section>
+        <section class="card">
+          <h2 class="section-title section-divider">Request Errors</h2>
+          <div class="charts-grid charts-errors">
+            <div class="chart-wrap"><canvas id="chartErrReadTimeout"></canvas></div>
+            <div class="chart-wrap"><canvas id="chartErrWriteTimeout"></canvas></div>
+            <div class="chart-wrap"><canvas id="chartErrReadUnavailable"></canvas></div>
+            <div class="chart-wrap"><canvas id="chartErrWriteUnavailable"></canvas></div>
+            <div class="chart-wrap"><canvas id="chartErrReadFailure"></canvas></div>
+            <div class="chart-wrap"><canvas id="chartErrWriteFailure"></canvas></div>
+          </div>
+        </section>
       </div>
 
       <div id="view-operations" class="view">
@@ -131,10 +150,16 @@
       </div>
 
       <div id="view-logs" class="view">
+        <section class="card metrics-controls">
+          <label for="logsNode">Node</label>
+          <select id="logsNode"></select>
+          <button type="button" id="logsStart" class="btn btn-primary">Start live tail</button>
+          <button type="button" id="logsStop" class="btn btn-secondary" disabled>Stop</button>
+          <span id="logsStatus" class="muted"></span>
+        </section>
         <section class="card">
-          <h2>Logs &amp; Events</h2>
-          <p class="muted">Select a node and run the "logs" action from Operations to view system.log output here, or run "metrics" for OTEL metrics.</p>
-          <pre id="logsOutput" class="results-box">No logs loaded.</pre>
+          <h2>Live logs (system.log)</h2>
+          <pre id="logsOutput" class="results-box logs-pre">Select a node and click "Start live tail" to stream logs.</pre>
         </section>
       </div>
     </main>

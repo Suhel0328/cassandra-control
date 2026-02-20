@@ -24,6 +24,8 @@ const METRICS_POLL_INTERVAL_MS = 30000;
 let metricsHistory = {};
 let metricsCharts = {};
 let metricsPollInterval = null;
+const LOGS_POLL_INTERVAL_MS = 10000;
+let logsPollInterval = null;
 
 function setResults(text, isError) {
   resultsEl.textContent = text;
@@ -108,10 +110,25 @@ function renderNodes(nodes) {
   renderClusterSummary(nodes || []);
   populateTargetSelect(nodes || []);
   populateMetricsNodeSelect(nodes || []);
+  populateLogsNodeSelect(nodes || []);
 }
 
 function populateMetricsNodeSelect(nodes) {
   const sel = document.getElementById('metricsNode');
+  if (!sel) return;
+  const keep = sel.value;
+  sel.innerHTML = '<option value="">Select a node</option>';
+  (nodes || []).forEach(n => {
+    const opt = document.createElement('option');
+    opt.value = n.ip;
+    opt.textContent = n.hostname && n.hostname !== n.ip ? `${n.ip} (${n.hostname})` : n.ip;
+    sel.appendChild(opt);
+  });
+  if (keep && nodes.some(n => n.ip === keep)) sel.value = keep;
+}
+
+function populateLogsNodeSelect(nodes) {
+  const sel = document.getElementById('logsNode');
   if (!sel) return;
   const keep = sel.value;
   sel.innerHTML = '<option value="">Select a node</option>';
@@ -198,7 +215,8 @@ function parseOtelToMap(jsonStr) {
             m.sum.dataPoints.forEach((dp) => {
               const v = dp.asInt !== undefined ? dp.asInt : dp.asDouble;
               if (v === undefined) return;
-              const attr = (dp.attributes || []).map(a => (a.value && (a.value.stringValue || a.value.intValue != null)) ? (a.value.stringValue || String(a.value.intValue)) : '').filter(Boolean).join('.');
+              const attrs = (dp.attributes || []).slice().sort((a, b) => (a.key || '').localeCompare(b.key || ''));
+              const attr = attrs.map(a => (a.value && (a.value.stringValue || a.value.intValue != null)) ? (a.value.stringValue || String(a.value.intValue)) : '').filter(Boolean).join('.');
               const key = attr ? `${name}.${attr}` : name;
               map[key] = v;
             });
@@ -267,6 +285,15 @@ function updateAllMetricsCharts() {
   updateChart('chartWriteLatency99', 'cassandra.client.request.write.latency.99p', 'Write latency 99p', 'µs', 'orange');
   updateChart('chartReadLatencyMax', 'cassandra.client.request.read.latency.max', 'Read latency max', 'µs', 'orange');
   updateChart('chartWriteLatencyMax', 'cassandra.client.request.write.latency.max', 'Write latency max', 'µs', 'orange');
+  updateChart('chartCompactionStorage', 'cassandra.compaction.tasks.completed', 'Compaction completed', '1', 'orange');
+  updateChart('chartTotalHints', 'cassandra.storage.total_hints.count', 'Total hints', '1', 'line');
+  updateChart('chartHintsInProgressStorage', 'cassandra.storage.total_hints.in_progress.count', 'Hints in progress', '1', 'line');
+  updateChart('chartErrReadTimeout', 'cassandra.client.request.error.count.Read.Timeout', 'Read Timeout', 'count', 'orange');
+  updateChart('chartErrWriteTimeout', 'cassandra.client.request.error.count.Write.Timeout', 'Write Timeout', 'count', 'orange');
+  updateChart('chartErrReadUnavailable', 'cassandra.client.request.error.count.Read.Unavailable', 'Read Unavailable', 'count', 'orange');
+  updateChart('chartErrWriteUnavailable', 'cassandra.client.request.error.count.Write.Unavailable', 'Write Unavailable', 'count', 'orange');
+  updateChart('chartErrReadFailure', 'cassandra.client.request.error.count.Read.Failure', 'Read Failure', 'count', 'orange');
+  updateChart('chartErrWriteFailure', 'cassandra.client.request.error.count.Write.Failure', 'Write Failure', 'count', 'orange');
 }
 
 async function fetchMetricsForNode(nodeIp) {
@@ -278,8 +305,9 @@ async function fetchMetricsForNode(nodeIp) {
   const data = await res.json().catch(() => ({}));
   const results = data.results || {};
   const r = results[nodeIp];
-  if (!r || r.error) return null;
-  return r.output || null;
+  if (!r) return { output: null, error: 'No response from node' };
+  if (r.error) return { output: null, error: r.error };
+  return { output: r.output || null, error: null };
 }
 
 async function metricsPollTick() {
@@ -288,8 +316,12 @@ async function metricsPollTick() {
   if (!nodeIp) return;
   const statusEl = document.getElementById('metricsStatus');
   if (statusEl) statusEl.textContent = 'Fetching…';
-  const output = await fetchMetricsForNode(nodeIp);
-  if (statusEl) statusEl.textContent = output ? new Date().toLocaleTimeString() + ' — OK' : 'Error fetching metrics';
+  const { output, error } = await fetchMetricsForNode(nodeIp);
+  if (statusEl) {
+    if (error) statusEl.textContent = 'Error: ' + error;
+    else if (output) statusEl.textContent = new Date().toLocaleTimeString() + ' — OK';
+    else statusEl.textContent = 'Error: no metrics data';
+  }
   if (output) {
     const map = parseOtelToMap(output);
     pushMetricsToHistory(map);
@@ -321,6 +353,57 @@ function stopMetricsPolling() {
   document.getElementById('metricsStart').disabled = false;
   document.getElementById('metricsStop').disabled = true;
   const statusEl = document.getElementById('metricsStatus');
+  if (statusEl) statusEl.textContent = 'Stopped.';
+}
+
+async function fetchLogsForNode(nodeIp) {
+  const res = await fetch(API_BASE + '/api/execute', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ target: nodeIp, action: 'logs' }),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) return { output: null, error: data.error || res.statusText };
+  const results = data.results || {};
+  const r = results[nodeIp];
+  if (!r) return { output: null, error: 'No result for node' };
+  if (r.error) return { output: r.output || '', error: r.error };
+  return { output: r.output || '', error: null };
+}
+
+function startLogsPolling() {
+  const sel = document.getElementById('logsNode');
+  const nodeIp = sel ? sel.value : '';
+  if (!nodeIp) {
+    const statusEl = document.getElementById('logsStatus');
+    if (statusEl) statusEl.textContent = 'Select a node first.';
+    return;
+  }
+  if (logsPollInterval) return;
+  document.getElementById('logsStart').disabled = true;
+  document.getElementById('logsStop').disabled = false;
+  const statusEl = document.getElementById('logsStatus');
+  if (statusEl) statusEl.textContent = 'Live tail started…';
+  const tick = async () => {
+    const { output, error } = await fetchLogsForNode(nodeIp);
+    if (logsOutputEl) {
+      logsOutputEl.textContent = error ? `Error: ${error}\n\n${output || ''}` : (output || 'No output.');
+      logsOutputEl.classList.toggle('error', !!error);
+    }
+    if (statusEl) statusEl.textContent = error ? `Error: ${error}` : `Updated ${new Date().toLocaleTimeString()}`;
+  };
+  tick();
+  logsPollInterval = setInterval(tick, LOGS_POLL_INTERVAL_MS);
+}
+
+function stopLogsPolling() {
+  if (logsPollInterval) {
+    clearInterval(logsPollInterval);
+    logsPollInterval = null;
+  }
+  document.getElementById('logsStart').disabled = false;
+  document.getElementById('logsStop').disabled = true;
+  const statusEl = document.getElementById('logsStatus');
   if (statusEl) statusEl.textContent = 'Stopped.';
 }
 
@@ -366,6 +449,11 @@ const metricsStartBtn = document.getElementById('metricsStart');
 const metricsStopBtn = document.getElementById('metricsStop');
 if (metricsStartBtn) metricsStartBtn.addEventListener('click', startMetricsPolling);
 if (metricsStopBtn) metricsStopBtn.addEventListener('click', stopMetricsPolling);
+
+const logsStartBtn = document.getElementById('logsStart');
+const logsStopBtn = document.getElementById('logsStop');
+if (logsStartBtn) logsStartBtn.addEventListener('click', startLogsPolling);
+if (logsStopBtn) logsStopBtn.addEventListener('click', stopLogsPolling);
 
 actionSelect.addEventListener('change', () => {
   const needParams = PARAM_ACTIONS.includes(actionSelect.value);

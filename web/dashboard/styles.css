@@ -295,6 +295,11 @@ body {
   border-color: var(--success);
 }
 
+.results-box.logs-pre {
+  max-height: 60vh;
+  min-height: 200px;
+}
+
 /* Metrics cards (OTEL summary) */
 .metrics-cards {
   margin-top: 1rem;
