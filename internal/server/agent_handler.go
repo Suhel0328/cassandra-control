@@ -18,9 +18,9 @@ var upgrader = websocket.Upgrader{
 }
 
 const (
-	writeWait      = 10 * time.Second
-	pongWait       = 60 * time.Second
-	pingPeriod     = (pongWait * 9) / 10
+	writeWait      = 15 * time.Second
+	pongWait       = 5 * time.Minute   // long idle so proxies/firewalls don't drop the connection
+	pingPeriod     = 2 * time.Minute   // send ping every 2 min to keep connection alive
 	maxMessageSize = 512 * 1024
 )
 

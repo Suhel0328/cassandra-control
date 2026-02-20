@@ -334,6 +334,9 @@ To let clients install the agent with a one-liner (curl script + optional binary
 
 ## Part 4: Troubleshooting
 
+- **Agents keep disconnecting**  
+  The server sends WebSocket pings every 2 minutes and waits 5 minutes for pong. If the server is behind a proxy (nginx, ALB, etc.), increase the proxy idle timeout to at least 5 minutes (e.g. nginx `proxy_read_timeout 300;`, ALB idle timeout 300 seconds). Redeploy the latest server binary so it uses the longer timeouts.
+
 - **Dashboard not loading**  
   - Check server is running and listening on 443.  
   - Check `CASSANDRA_CONTROL_DASHBOARD_DIR` points to the directory containing `index.html`.

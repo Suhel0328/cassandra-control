@@ -16,6 +16,7 @@
       <nav class="sidebar-nav">
         <a href="#" class="nav-item active" data-view="overview">Overview</a>
         <a href="#" class="nav-item" data-view="nodes">Nodes</a>
+        <a href="#" class="nav-item" data-view="metrics">Metrics</a>
         <a href="#" class="nav-item" data-view="operations">Operations</a>
         <a href="#" class="nav-item" data-view="logs">Logs &amp; Events</a>
       </nav>
@@ -49,6 +50,38 @@
         <section class="card">
           <h2>Connected nodes</h2>
           <div id="nodesList" class="nodes-list"></div>
+        </section>
+      </div>
+
+      <div id="view-metrics" class="view">
+        <section class="card metrics-controls">
+          <label for="metricsNode">Node</label>
+          <select id="metricsNode"></select>
+          <button type="button" id="metricsStart" class="btn btn-primary">Start monitoring</button>
+          <button type="button" id="metricsStop" class="btn btn-secondary" disabled>Stop</button>
+          <span id="metricsStatus" class="muted"></span>
+        </section>
+        <section class="card">
+          <h2 class="section-title">Throughput Statistics</h2>
+          <div class="charts-grid charts-throughput">
+            <div class="chart-wrap"><canvas id="chartReadCount"></canvas></div>
+            <div class="chart-wrap"><canvas id="chartWriteCount"></canvas></div>
+            <div class="chart-wrap"><canvas id="chartCompaction"></canvas></div>
+            <div class="chart-wrap"><canvas id="chartHints"></canvas></div>
+            <div class="chart-wrap"><canvas id="chartHintsInProgress"></canvas></div>
+            <div class="chart-wrap"><canvas id="chartQueueSize"></canvas></div>
+          </div>
+        </section>
+        <section class="card">
+          <h2 class="section-title section-divider">Latency Statistics Per Node</h2>
+          <div class="charts-grid charts-latency">
+            <div class="chart-wrap"><canvas id="chartReadLatency"></canvas></div>
+            <div class="chart-wrap"><canvas id="chartWriteLatency"></canvas></div>
+            <div class="chart-wrap"><canvas id="chartReadLatency99"></canvas></div>
+            <div class="chart-wrap"><canvas id="chartWriteLatency99"></canvas></div>
+            <div class="chart-wrap"><canvas id="chartReadLatencyMax"></canvas></div>
+            <div class="chart-wrap"><canvas id="chartWriteLatencyMax"></canvas></div>
+          </div>
         </section>
       </div>
 
@@ -106,6 +139,7 @@
       </div>
     </main>
   </div>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
