@@ -112,6 +112,6 @@ For **deploying on AWS EC2** (server + agents on Cassandra nodes) and **sharing 
 │   └── dashboard/    # index.html, styles.css, app.js
 ├── deploy/           # Systemd units, agent.yml.example, legacy install script
 ├── go.mod
-├── SETUP.md          # AxonOps-style agent setup
+├── SETUP.md          
 └── README.md
 ```
